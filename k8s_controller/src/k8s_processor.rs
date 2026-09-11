@@ -1,5 +1,5 @@
 use crate::templating::{render_job_template, JobTemplateValues};
-use crate::{arena_api, arenaclient::Arenaclient, k8s_config::K8sConfig, profile::Profile};
+use crate::{arena_api, arenaclient::Arenaclient, cache, k8s_config::K8sConfig, profile::Profile};
 use k8s_openapi::api::batch::v1::Job;
 use kube::{
     api::{Api, ListParams, PostParams},
@@ -75,6 +75,22 @@ async fn retrieve_match(settings: &K8sConfig, ac: &Arenaclient) -> anyhow::Resul
     let new_match = arena_api::get_next_match(&settings.website_url, &ac.token).await?;
 
     info!("Retrieved match {:?} for AC {:?}", new_match.id, ac.name);
+
+    // The website has logically assigned this match, but no Kubernetes Job exists yet.
+    // Verify and warm both bot ZIPs now so an unavailable artifact fails before game
+    // compute is allocated. Cache-only failures remain non-fatal inside the helper.
+    cache::prefetch_bot_zip(
+        &settings.caching_server_url,
+        &new_match.participant1.name,
+        &new_match.participant1.bot_zip_url,
+    )
+    .await?;
+    cache::prefetch_bot_zip(
+        &settings.caching_server_url,
+        &new_match.participant2.name,
+        &new_match.participant2.bot_zip_url,
+    )
+    .await?;
 
     let template = Profile::get(&new_match).template;
     let job_name = if settings.job_prefix.is_empty() {
