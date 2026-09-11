@@ -10,4 +10,20 @@ pub struct K8sConfig {
     pub arenaclients_json_path: String,
     pub version: String,
     pub max_arenaclients: usize,
+    #[serde(default = "default_caching_server_url")]
+    pub caching_server_url: String,
+}
+
+fn default_caching_server_url() -> String {
+    "http://aiarena-caching-nodeport-service".to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::default_caching_server_url;
+
+    #[test]
+    fn default_cache_url_matches_match_controller_service() {
+        assert_eq!(default_caching_server_url(), "http://aiarena-caching-nodeport-service");
+    }
 }

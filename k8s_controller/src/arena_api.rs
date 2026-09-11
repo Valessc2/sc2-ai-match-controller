@@ -33,6 +33,7 @@ pub struct MatchInfo {
 pub struct Participant {
     pub name: String,
     pub game_display_id: String,
+    pub bot_zip_url: String,
 }
 
 const GET_NEXT_MATCH_QUERY: &str = r#"
@@ -43,10 +44,12 @@ mutation {
       participant1 {
         name
         gameDisplayId
+        botZipUrl
       }
       participant2 {
         name
         gameDisplayId
+        botZipUrl
       }
     }
   }

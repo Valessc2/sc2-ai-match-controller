@@ -1,5 +1,6 @@
 mod arena_api;
 mod arenaclient;
+mod cache;
 mod k8s_config;
 mod k8s_processor;
 mod profile;
