@@ -11,11 +11,7 @@ fn cache_download_url(base_url: &str) -> String {
 }
 
 async fn verify_artifact_and_get_etag(client: &Client, artifact_url: &str, bot_name: &str) -> anyhow::Result<Option<String>> {
-    let response = client
-        .get(artifact_url)
-        .send()
-        .await
-        .with_context(|| format!("Failed to verify bot artifact for {bot_name}"))?;
+    let response = client.get(artifact_url).send().await.with_context(|| format!("Failed to verify bot artifact for {bot_name}"))?;
 
     let status = response.status();
     if !status.is_success() {
@@ -88,10 +84,7 @@ pub async fn prefetch_bot_zip(caching_server_url: &str, bot_name: &str, artifact
             info!("Prefetched bot artifact {:?} into the shared cache with ETag {:?}", bot_name, etag);
         }
         Err(e) => {
-            warn!(
-                "Shared cache prefetch failed for bot {:?}: {:?}. The artifact source is reachable, so the Kubernetes Job may fall back to the existing direct-download path.",
-                bot_name, e
-            );
+            warn!("Shared cache prefetch failed for bot {:?}: {:?}. The artifact source is reachable, so the Kubernetes Job may fall back to the existing direct-download path.", bot_name, e);
         }
     }
 
@@ -109,9 +102,6 @@ mod tests {
 
     #[test]
     fn cache_download_url_uses_download_endpoint() {
-        assert_eq!(
-            cache_download_url("http://aiarena-caching-nodeport-service/"),
-            "http://aiarena-caching-nodeport-service/download"
-        );
+        assert_eq!(cache_download_url("http://aiarena-caching-nodeport-service/"), "http://aiarena-caching-nodeport-service/download");
     }
 }
